@@ -40,8 +40,3 @@ Upon running the application, you will be presented with a dashboard interface. 
 - **Benchmark Data**: Retrieved from Yahoo Finance.
 
 ## Screenshots
-
-
---- 
-
-Replace `[Your Name](https://github.com/yourusername)` with your actual name and GitHub profile link. You may also want to include additional sections or customize the content further based on your project's specifics. Additionally, don't forget to include any relevant screenshots or examples to provide visual context for potential users.
