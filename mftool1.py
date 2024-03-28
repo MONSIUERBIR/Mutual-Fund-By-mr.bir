@@ -84,7 +84,7 @@ st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ("Home", "Mutual Fund Analysis","Scheme Codes"))
 # Define schemes_df in a broader scope to ensure availability
 try:
-    schemes_df = pd.read_csv("C:/Users/AKSHAY/PycharmProjects/pythonProject3/scheme_codes.csv")
+    schemes_df = pd.read_csv("scheme_codes.csv")
 except FileNotFoundError:
     schemes_df = pd.DataFrame()  # In case the file is not found, define an empty DataFrame
 
