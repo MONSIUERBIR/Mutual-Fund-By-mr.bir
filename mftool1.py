@@ -81,7 +81,7 @@ import streamlit as st
 
 # Page setup and navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ("Home", "Mutual Fund Analysis","Scheme Codes"))
+page = st.sidebar.select_slider("Go to", ("Home", "Mutual Fund Analysis","Scheme Codes"))
 # Define schemes_df in a broader scope to ensure availability
 try:
     schemes_df = pd.read_csv("scheme_codes.csv")
@@ -133,7 +133,7 @@ elif page == "Mutual Fund Analysis":
 
     # UI layout and inputs
     st.sidebar.title("Settings")
-    mode = st.sidebar.radio("Mode", ("Analysis Mode", "Comparison Mode"))
+    mode = st.sidebar.select_slider("Mode", ("Analysis Mode", "Comparison Mode"))
     benchmark_ticker = st.sidebar.text_input("Benchmark Ticker (Yahoo Finance)", "SPY")
 
     fund_codes = []
