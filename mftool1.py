@@ -388,7 +388,7 @@ with tabs[1]:
 
                     # Display the processed data
                     st.write(f"Showing returns for {scheme_code} starting from {start_date}:")
-                    st.write(f"Detailed Summary for {scheme_name} ")
+                    st.info(f"Detailed Summary for {scheme_name} ")
                     st.dataframe(nav_df)
                 else:
                     st.error("No data found for the provided scheme code and date range.")
