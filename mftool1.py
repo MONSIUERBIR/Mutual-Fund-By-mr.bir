@@ -13,6 +13,7 @@ mf = Mftool()
 
 RISK_FREE_RATE = 6.7  # Constant Risk-Free Rate
 
+
 # Function to fetch mutual fund NAV data and scheme name
 def fetch_nav_data_and_name(scheme_code, start_date='2015-01-01'):
     nav_data = mf.get_scheme_historical_nav(scheme_code, start_date, datetime.now().strftime('%Y-%m-%d'))
@@ -26,11 +27,13 @@ def fetch_nav_data_and_name(scheme_code, start_date='2015-01-01'):
     else:
         return pd.DataFrame(), scheme_name
 
+
 # Function to fetch benchmark data from Yahoo Finance
 def fetch_benchmark_data(ticker, start_date='2015-01-01'):
     benchmark_data = yf.download(ticker, start=start_date)
     benchmark_data.reset_index(inplace=True)
     return benchmark_data
+
 
 # Modified function to calculate annualized returns for mutual fund and benchmark
 def calculate_annualized_returns(df, column_name='nav'):
@@ -46,6 +49,7 @@ def calculate_annualized_returns(df, column_name='nav'):
         period_return = calculate_returns(df[column_name].iloc[-1], df[column_name], days).iloc[-1]
         results[period + ' Return'] = period_return
     return pd.DataFrame([results])
+
 
 # Function to calculate financial metrics
 def calculate_financial_metrics(returns_df, benchmark_returns_df):
@@ -77,6 +81,7 @@ def calculate_financial_metrics(returns_df, benchmark_returns_df):
 
     return pd.DataFrame([metrics])
 
+
 # Fetch scheme codes data
 try:
     schemes_df = pd.read_csv("scheme_codes.csv")
@@ -84,21 +89,30 @@ except FileNotFoundError:
     schemes_df = pd.DataFrame()  # In case the file is not found, define an empty DataFrame
 
 # Set page config
-st.set_page_config('Mutual Fund Calculator', page_icon=':bar_chart:')
-#st.write('Phone users: swipe on tabs to see all options.')
+st.set_page_config('Mutual Fund Calculator', page_icon=':bar_chart:', layout="wide")
+# st.write('Phone users: swipe on tabs to see all options.')
 
 # Define tabs
 tabs = st.tabs(tabs=['Home', 'Mutual Fund Analysis', 'Scheme Codes', 'MF Guide'])
+
 
 # Detailed summary
 def calculate_returns1(latest_nav, nav_series, n):
     return (((latest_nav / nav_series.shift(n))) - 1) * 100
 
+
 def calculate_returns(latest_nav, nav_series, n):
     return (((latest_nav / nav_series.shift(n)) ** (1 / n)) - 1) * 100
 
+# Load the scheme codes and names from the uploaded CSV file
+scheme_codes_df = pd.read_csv('scheme_codes.csv')
 
+# Adjust column names based on your actual CSV structure
+scheme_codes = scheme_codes_df['Scheme_Code'].tolist()  # Placeholder for 'Scheme Code' column
+scheme_names = scheme_codes_df['Scheme_Name'].tolist()  # Placeholder for 'Scheme Name' column
 
+# Map scheme names to codes for display in the selectbox
+scheme_options = {name: code for name, code in zip(scheme_names, scheme_codes)}
 
 # Home tab content
 with tabs[0]:
@@ -127,14 +141,28 @@ with tabs[1]:
     st.title("Mutual Fund Analysis Dashboard")
 
     # Define tabs for Mutual Fund Analysis
-    analysis_tabs = st.tabs(tabs=['Analysis Mode', 'Comparison Mode', 'SIP Calculator', 'Lumpsum Investment Calculator', 'Quick Tools', 'Detailed Annual Returns'])
-
+    analysis_tabs = st.tabs(
+        tabs=['Analysis Mode', 'Comparison Mode', 'SIP Calculator', 'Lumpsum Investment Calculator', 'Quick Tools',
+              'Detailed Annual Returns'])
 
     # Analysis Mode
     with analysis_tabs[0]:  # Analysis Mode
         st.subheader("Analysis Mode")
         # Inputs for selecting a single mutual fund scheme and benchmark
-        fund_code = st.text_input("Enter Mutual Fund Scheme Code", "100033")
+        selected_scheme_name = st.selectbox(
+            'Select Mutual Fund Scheme',
+            options=scheme_names, # Display scheme names in the selectbox
+            placeholder="Select Scheme...",
+            index=4610,
+
+        )
+
+        # Fetch the selected scheme code based on the selected name
+        selected_scheme_code = scheme_options[selected_scheme_name]
+
+        # Display the selected scheme code
+        st.write('You selected scheme code:', selected_scheme_code)
+        fund_code = selected_scheme_code
         benchmark_ticker = st.text_input("Benchmark Ticker (Yahoo Finance)", "SPY")
         st.write('Get Benchmark Ticker names from Yahoo Finance.')
 
@@ -154,60 +182,114 @@ with tabs[1]:
                 # Expander for detailed data and financial metrics
                 with st.expander(f"Show NAV Data and Financial Metrics for {scheme_name}"):
                     st.dataframe(nav_df[['date', 'nav']])
-                    st.table(annualized_returns_df)
-                    st.table(financial_metrics_df)
+
+
+                    # Function to determine performance indicator
+                    def performance_indicator(value):
+                        if value >= 10:
+                            return "🟢 Excellent"
+                        elif 5 <= value < 10:
+                            return "🟡 Good"
+                        else:
+                            return "🔴 Needs Improvement"
+
+
+                    # Display annualized returns with performance indicators
+                    st.write("Annualized Returns:")
+                    cols_returns = st.columns(len(annualized_returns_df.columns))
+                    for col, metric in zip(cols_returns, annualized_returns_df.columns):
+                        metric_value = annualized_returns_df[metric].values[0]
+                        performance = performance_indicator(metric_value)
+                        col.metric(label=metric, value=f"{metric_value:.2f}%", delta=performance)
+
+                    # Display financial metrics with performance indicators
+                    st.write("Financial Metrics:")
+                    cols_metrics = st.columns(len(financial_metrics_df.columns))
+                    for col, metric in zip(cols_metrics, financial_metrics_df.columns):
+                        value = financial_metrics_df[metric].values[0]
+                        formatted_value = f"{value:.2f}" if isinstance(value, float) else value
+                        performance = performance_indicator(value)
+                        col.metric(label=metric, value=formatted_value, delta=performance)
 
                 # Plot NAV vs Benchmark
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=nav_df['date'], y=nav_df['nav'], mode='lines', name=f'{scheme_name} NAV'))
                 fig.add_trace(go.Scatter(x=benchmark_df['Date'], y=benchmark_df['Adj Close'], mode='lines',
                                          name=f'{benchmark_ticker} Benchmark'))
-                fig.update_layout(title='NAV vs. Benchmark Performance', xaxis_title='Date', yaxis_title='Value')
+                fig.update_layout(width=1300,  # Set the width of the plot
+                            title='NAV vs. Benchmark Performance', xaxis_title='Date', yaxis_title='Value')
                 st.plotly_chart(fig)
 
-        with analysis_tabs[1]:  # Comparison Mode
-            st.subheader("Comparison Mode")
-            # Inputs for comparing multiple mutual fund schemes and a benchmark
-            fund_codes_input = st.text_area("Enter Mutual Fund Codes (comma-separated)", "100033,102885")
-            benchmark_ticker_comparison = st.text_input("Benchmark Ticker for Comparison (Yahoo Finance)", "SPY")
-            st.write('Get Benchmark Ticker names from Yahoo Finance.')
+    with analysis_tabs[1]:  # Comparison Mode
+        st.subheader("Comparison Mode")
 
-            fund_codes = [code.strip() for code in fund_codes_input.split(",") if code.strip()]
+        # Inputs for selecting multiple mutual fund schemes and a benchmark
+        selected_scheme_names = st.multiselect(
+            'Select Mutual Fund Schemes',
+            options=scheme_names,  # Display scheme names in the multiselect
+            default=[scheme_names[4610]] if scheme_names else []  # Default selection
+        )
 
+        # Fetch the selected scheme codes based on the selected names and ensure they are strings
+        selected_scheme_codes = [str(scheme_options[name]) for name in selected_scheme_names]
+
+        # Show selected scheme codes for confirmation
+        st.write('You selected scheme codes:', ', '.join(selected_scheme_codes))
+
+        benchmark_ticker_comparison = st.text_input("Benchmark Ticker for Comparison (Yahoo Finance)", "SPY")
+        st.write('Get Benchmark Ticker names from Yahoo Finance.')
+
+        if selected_scheme_codes and benchmark_ticker_comparison:
             benchmark_df_comparison = fetch_benchmark_data(benchmark_ticker_comparison)
+            fig = go.Figure()
 
-            if fund_codes and not benchmark_df_comparison.empty:
-                for fund_code in fund_codes:
-                    nav_df, scheme_name = fetch_nav_data_and_name(fund_code)
+            # Iterate over each selected scheme code
+            for fund_code in selected_scheme_codes:
+                nav_df, scheme_name = fetch_nav_data_and_name(fund_code)
 
-                    if not nav_df.empty:
-                        st.markdown(
-                            f"#### Comparison for {scheme_name} against {benchmark_ticker_comparison} benchmark")
+                if not nav_df.empty:
+                    st.markdown(f"#### {scheme_name}:")
 
-                        # Calculation
-                        annualized_returns_df = calculate_annualized_returns(nav_df, 'nav')
-                        benchmark_annualized_returns_df = calculate_annualized_returns(benchmark_df_comparison,
-                                                                                       'Adj Close')
-                        financial_metrics_df = calculate_financial_metrics(annualized_returns_df,
-                                                                           benchmark_annualized_returns_df)
+                    # Perform calculations
+                    annualized_returns_df = calculate_annualized_returns(nav_df, 'nav')
+                    financial_metrics_df = calculate_financial_metrics(annualized_returns_df,
+                                                                       benchmark_annualized_returns_df)
 
-                        # Expander for detailed NAV data and financial metrics
-                        with st.expander(f"Show NAV Data and Financial Metrics for {scheme_name}"):
-                            st.dataframe(nav_df[['date', 'nav']])
-                            st.table(annualized_returns_df)
-                            st.table(financial_metrics_df)
+                    # Expander for detailed NAV data and financial metrics
+                    with st.expander(f"Metrics for {scheme_name}"):
+                        # Display performance indicators here as needed
 
-                        # Plot NAV vs Benchmark for each fund
-                        fig = go.Figure()
-                        fig.add_trace(
-                            go.Scatter(x=nav_df['date'], y=nav_df['nav'], mode='lines', name=f'{scheme_name} NAV'))
-                        fig.add_trace(
-                            go.Scatter(x=benchmark_df_comparison['Date'], y=benchmark_df_comparison['Adj Close'],
-                                       mode='lines', name=f'{benchmark_ticker_comparison} Benchmark'))
-                        fig.update_layout(
-                            title=f'NAV vs. Benchmark ({benchmark_ticker_comparison}) Performance for {scheme_name}',
-                            xaxis_title='Date', yaxis_title='Value')
-                        st.plotly_chart(fig)
+                        # Example for annualized returns
+                        # Display annualized returns with performance indicators
+                        st.write("Annualized Returns:")
+                        cols_returns = st.columns(len(annualized_returns_df.columns))
+                        for col, metric in zip(cols_returns, annualized_returns_df.columns):
+                            metric_value = annualized_returns_df[metric].values[0]
+                            performance = performance_indicator(metric_value)
+                            col.metric(label=metric, value=f"{metric_value:.2f}%", delta=performance)
+
+                        # Display financial metrics with performance indicators
+                        st.write("Financial Metrics:")
+                        cols_metrics = st.columns(len(financial_metrics_df.columns))
+                        for col, metric in zip(cols_metrics, financial_metrics_df.columns):
+                            value = financial_metrics_df[metric].values[0]
+                            formatted_value = f"{value:.2f}" if isinstance(value, float) else value
+                            performance = performance_indicator(value)
+                            col.metric(label=metric, value=formatted_value, delta=performance)
+
+                    # Add series to the plot for each selected fund
+                    fig.add_trace(go.Scatter(x=nav_df['date'], y=nav_df['nav'], mode='lines', name=scheme_name))
+
+            # Add benchmark series to the plot
+            if not benchmark_df_comparison.empty:
+                fig.add_trace(
+                    go.Scatter(x=benchmark_df_comparison['Date'], y=benchmark_df_comparison['Adj Close'], mode='lines',
+                               name=f'{benchmark_ticker_comparison} Benchmark'))
+
+            # Update plot layout
+            fig.update_layout(width=1300, title='NAV vs. Benchmark Performance Comparison', xaxis_title='Date', yaxis_title='Value',
+                              legend_title="Schemes")
+            st.plotly_chart(fig)
 
     # Calculator Pages
     with analysis_tabs[2]:
@@ -281,88 +363,99 @@ with tabs[1]:
         This calculator helps you calculate the wealth gain and expected returns for your monthly SIP investment.''')
 
     with analysis_tabs[3]:
-            st.subheader("Lumpsum Investment Calculator")
-            lumpsum_amount = st.number_input('Investment Amount', 100, 9999999999, 1000)
-            lumpsum_amount_inwords = babel.numbers.format_currency(lumpsum_amount, 'INR', locale='en_IN')
+        st.subheader("Lumpsum Investment Calculator")
+        lumpsum_amount = st.number_input('Investment Amount', 100, 9999999999, 1000)
+        lumpsum_amount_inwords = babel.numbers.format_currency(lumpsum_amount, 'INR', locale='en_IN')
 
-            # lumpsum_rate_of_return = st.number_input('Expected Rate of Return (in %)',1.00,100.0,12.0,0.01)
-            lumpsum_rate_of_return = st.slider('Expected Rate of Return (in %) ', 1, 30, 12)
-            lumpsum_duration = st.number_input('Duration of Investment (in years)', 1, 99, 10)
+        # lumpsum_rate_of_return = st.number_input('Expected Rate of Return (in %)',1.00,100.0,12.0,0.01)
+        lumpsum_rate_of_return = st.slider('Expected Rate of Return (in %) ', 1, 30, 12)
+        lumpsum_duration = st.number_input('Duration of Investment (in years)', 1, 99, 10)
 
-            cagr = lumpsum_amount * (pow((1 + lumpsum_rate_of_return / 100), lumpsum_duration))
-            cagr_inwords = babel.numbers.format_currency(cagr, 'INR', locale='en_IN')
+        cagr = lumpsum_amount * (pow((1 + lumpsum_rate_of_return / 100), lumpsum_duration))
+        cagr_inwords = babel.numbers.format_currency(cagr, 'INR', locale='en_IN')
 
-            st.markdown('##')
-            lumpsum_checkbox = st.checkbox('Adjust Investment for Inflation ? (Assumed annual inflation rate is 6%)', False)
+        st.markdown('##')
+        lumpsum_checkbox = st.checkbox('Adjust Investment for Inflation ? (Assumed annual inflation rate is 6%)', False)
 
-            if lumpsum_checkbox == False:
+        if lumpsum_checkbox == False:
 
-                lumpsum_gain = round(float(cagr) - float(lumpsum_amount), 2)
-                lumpsum_gain_inwords = babel.numbers.format_currency(lumpsum_gain, 'INR', locale='en_IN')
+            lumpsum_gain = round(float(cagr) - float(lumpsum_amount), 2)
+            lumpsum_gain_inwords = babel.numbers.format_currency(lumpsum_gain, 'INR', locale='en_IN')
 
-                st.subheader(f'Amount Invested: {lumpsum_amount_inwords}')
-                st.subheader(f'Final Amount: {cagr_inwords}')
-                st.subheader(f'Gain: {lumpsum_gain_inwords}')
+            st.subheader(f'Amount Invested: {lumpsum_amount_inwords}')
+            st.subheader(f'Final Amount: {cagr_inwords}')
+            st.subheader(f'Gain: {lumpsum_gain_inwords}')
 
-                # plot pie chart
-                fig = go.Figure(data=[go.Pie(labels=['Investment', 'Gain'], values=[lumpsum_amount, lumpsum_gain])])
-                fig.update_traces(hoverinfo='value', textinfo='label+value', textfont_size=15,
-                                  marker=dict(colors=['52ED5D', 'ED7052'], line=dict(color='#000000', width=2)))
-                st.plotly_chart(fig)
+            # plot pie chart
+            fig = go.Figure(data=[go.Pie(labels=['Investment', 'Gain'], values=[lumpsum_amount, lumpsum_gain])])
+            fig.update_traces(hoverinfo='value', textinfo='label+value', textfont_size=15,
+                              marker=dict(colors=['52ED5D', 'ED7052'], line=dict(color='#000000', width=2)))
+            st.plotly_chart(fig)
 
-            elif lumpsum_checkbox == True:
-                cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - 6) / 100), lumpsum_duration))
-                cagr_after_inflation_inwords = babel.numbers.format_currency(cagr_after_inflation, 'INR', locale='en_IN')
+        elif lumpsum_checkbox == True:
+            cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - 6) / 100), lumpsum_duration))
+            cagr_after_inflation_inwords = babel.numbers.format_currency(cagr_after_inflation, 'INR', locale='en_IN')
 
-                lumpsum_gain_after_inflation = round(float(cagr_after_inflation) - float(lumpsum_amount), 2)
-                lumpsum_gain_after_inflation_inwords = babel.numbers.format_currency(lumpsum_gain_after_inflation, 'INR',
-                                                                                     locale='en_IN')
+            lumpsum_gain_after_inflation = round(float(cagr_after_inflation) - float(lumpsum_amount), 2)
+            lumpsum_gain_after_inflation_inwords = babel.numbers.format_currency(lumpsum_gain_after_inflation, 'INR',
+                                                                                 locale='en_IN')
 
-                st.subheader(f'Amount Invested: {lumpsum_amount_inwords}')
-                st.subheader(f'Final Amount: {cagr_after_inflation_inwords}')
-                st.subheader(f'Gain: {lumpsum_gain_after_inflation_inwords}')
-    
-                # plot pie chart
-                fig = go.Figure(
-                    data=[go.Pie(labels=['Investment', 'Gain'], values=[lumpsum_amount, lumpsum_gain_after_inflation])])
-                fig.update_traces(hoverinfo='value', textinfo='label+value', textfont_size=15,
-                                  marker=dict(colors=['52ED5D', 'ED7052'], line=dict(color='#000000', width=2)))
-                st.plotly_chart(fig)
+            st.subheader(f'Amount Invested: {lumpsum_amount_inwords}')
+            st.subheader(f'Final Amount: {cagr_after_inflation_inwords}')
+            st.subheader(f'Gain: {lumpsum_gain_after_inflation_inwords}')
+
+            # plot pie chart
+            fig = go.Figure(
+                data=[go.Pie(labels=['Investment', 'Gain'], values=[lumpsum_amount, lumpsum_gain_after_inflation])])
+            fig.update_traces(hoverinfo='value', textinfo='label+value', textfont_size=15,
+                              marker=dict(colors=['52ED5D', 'ED7052'], line=dict(color='#000000', width=2)))
+            st.plotly_chart(fig)
 
     with analysis_tabs[4]:
-            st.subheader("Quick Tools")
-            calc1, calc2 = st.columns(2)
+        st.subheader("Quick Tools")
+        calc1, calc2 = st.columns(2)
 
-            with calc1:
-                st.subheader('Future Value Calculator')
+        with calc1:
+            st.subheader('Future Value Calculator')
 
-                principal_amount = st.number_input('Today\'s Value', 1, 1000000000, 50000)
-                after_years = st.number_input('After Years', 1, 100, 10)
-                expected_increase = st.number_input('Expected Rate of Increase (in %)', 1, 20, 6)
-                expected_increase = expected_increase / 100
+            principal_amount = st.number_input('Today\'s Value', 1, 1000000000, 50000)
+            after_years = st.number_input('After Years', 1, 100, 10)
+            expected_increase = st.number_input('Expected Rate of Increase (in %)', 1, 20, 6)
+            expected_increase = expected_increase / 100
 
-                future_value_calc = principal_amount * (pow(1 + expected_increase, after_years))
-                future_value_calc_inwords = babel.numbers.format_currency(future_value_calc, 'INR', locale='en_IN')
+            future_value_calc = principal_amount * (pow(1 + expected_increase, after_years))
+            future_value_calc_inwords = babel.numbers.format_currency(future_value_calc, 'INR', locale='en_IN')
 
-                st.subheader(f'Future Value: {future_value_calc_inwords}')
+            st.subheader(f'Future Value: {future_value_calc_inwords}')
 
-            with calc2:
-                st.subheader('Present Value Calculator')
+        with calc2:
+            st.subheader('Present Value Calculator')
 
-                principal_amount1 = st.number_input('Future\'s Value', 1, 1000000000, 100000)
-                after_years1 = st.number_input('After Years ', 1, 100, 5)
-                expected_decrease = st.number_input('Expected Rate of Decrease (in %)', 1, 20, 6)
-                expected_decrease = expected_decrease / 100
+            principal_amount1 = st.number_input('Future\'s Value', 1, 1000000000, 100000)
+            after_years1 = st.number_input('After Years ', 1, 100, 5)
+            expected_decrease = st.number_input('Expected Rate of Decrease (in %)', 1, 20, 6)
+            expected_decrease = expected_decrease / 100
 
-                present_value_calc = principal_amount1 / (pow(1 + expected_decrease, after_years1))
-                present_value_calc_inwords = babel.numbers.format_currency(present_value_calc, 'INR', locale='en_IN')
+            present_value_calc = principal_amount1 / (pow(1 + expected_decrease, after_years1))
+            present_value_calc_inwords = babel.numbers.format_currency(present_value_calc, 'INR', locale='en_IN')
 
-                st.subheader(f'Present Value: {present_value_calc_inwords}')
+            st.subheader(f'Present Value: {present_value_calc_inwords}')
     with analysis_tabs[5]:
         st.subheader("Detailed Annual Returns")
 
         # Inputs for mutual fund scheme code and start date
-        scheme_code = st.text_input("Enter Mutual Fund Scheme Code", "101738")
+        selected_scheme_name = st.selectbox(
+            'Select Mutual Fund Scheme',
+            options=scheme_names,  # Display scheme names in the selectbox
+            index= 4610,
+        )
+
+        # Fetch the selected scheme code based on the selected name
+        selected_scheme_code = scheme_options[selected_scheme_name]
+
+        # Display the selected scheme code
+        st.write('You selected scheme code:', selected_scheme_code)
+        scheme_code = selected_scheme_code
         start_date = st.text_input("Enter start date (DD-MM-YYYY)", "03-04-2006")
 
         if scheme_code and start_date:
@@ -417,5 +510,4 @@ with tabs[2]:
 with tabs[3]:
     st.title("Mutual Fund Guide")
     st.write("MF Guide Content Goes Here")
-
 
