@@ -307,17 +307,7 @@ with tabs[1]:
                 )
 
                 # Set custom colors if needed
-                colors = [    '#1f77b4',  # muted blue
-                                '#ff7f0e',  # safety orange
-                                '#2ca02c',  # cooked asparagus green
-                                '#d62728',  # brick red
-                                '#9467bd',  # muted purple
-                                '#8c564b',  # chestnut brown
-                                '#e377c2',  # raspberry yogurt pink
-                                '#7f7f7f',  # middle gray
-                                '#bcbd22',  # curry yellow-green
-                                '#17becf'   # blue-teal
-                         ]  # Example colors
+                colors = ['blue', 'orange', 'green', 'red', 'purple']  # Example colors
                 for i, trace in enumerate(fig.data):
                     trace.line.color = colors[i % len(colors)]
 
@@ -483,14 +473,14 @@ with tabs[1]:
             options=scheme_names,  # Display scheme names in the selectbox
             index= 4610,
         )
-
+        st.write('You selected scheme code:', scheme_options[selected_scheme_name])
         # Fetch the selected scheme code based on the selected name
         selected_scheme_code = scheme_options[selected_scheme_name]
 
         # Display the selected scheme code
-        st.write('You selected scheme code:', selected_scheme_code)
+
         scheme_code = selected_scheme_code
-        start_date = st.text_input("Enter start date (DD-MM-YYYY)", "03-04-2006")
+        start_date = st.text_input("Enter start date (DD-MM-YYYY)", "21-09-2007")
 
         if scheme_code and start_date:
             try:
@@ -515,8 +505,23 @@ with tabs[1]:
 
                     # Display the processed data
                     st.write(f"Showing returns for {scheme_code} starting from {start_date}:")
-                    st.info(f"Detailed Summary for {scheme_name} ")
-                    st.dataframe(nav_df)
+                    st.info(f"Detailed Summary for {selected_scheme_name} ")
+                    st.dataframe(nav_df, width=1600)
+
+                    # Convert DataFrame to CSV for download
+                    csv = nav_df.to_csv(index=False)
+
+                    # Centering the download button
+                    col1, col2, col3, col4,col5 = st.columns([1, 1, 1, 1, 1])
+                    with col3:  # This creates a column layout, and using the middle column to center the button.
+                        st.download_button(
+                            label="Download NAV Data as CSV",
+                            data=csv,
+                            file_name=f"nav_data_{scheme_code}.csv",
+                            mime='text/csv',
+                            key='download-csv'
+                        )
+
                 else:
                     st.error("No data found for the provided scheme code and date range.")
             except ValueError:
