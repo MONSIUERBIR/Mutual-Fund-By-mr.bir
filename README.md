@@ -3,7 +3,7 @@ To write a README file for your Mutual Fund Analysis Dashboard project, you'll w
 ---
 
 # Mutual Fund Analysis Dashboard 
-'https://mutual-fund-by-mrbir.streamlit.app/'
+'https://mf-analyser-mrbir.streamlit.app/'
 The Mutual Fund Analysis Dashboard is a web application designed to provide comprehensive analysis and comparison of mutual funds. It allows users to access historical NAV data, compare mutual fund performance against benchmark indices, calculate financial metrics, and make informed investment decisions.
 
 ## Features
