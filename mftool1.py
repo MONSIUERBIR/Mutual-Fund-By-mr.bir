@@ -534,4 +534,3 @@ with tabs[2]:
 with tabs[3]:
     st.title("Mutual Fund Guide")
     st.write("MF Guide Content Goes Here")
-
