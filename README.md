@@ -1,5 +1,3 @@
-To write a README file for your Mutual Fund Analysis Dashboard project, you'll want to include information about what the project does, how to use it, any prerequisites, installation instructions, and possibly some examples or screenshots. Here's a basic template for your README file:
-
 ---
 
 # Mutual Fund Analysis Dashboard 
