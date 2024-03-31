@@ -191,7 +191,7 @@ with tabs[1]:
 
                 # Expander for detailed data and financial metrics
                 with st.expander(f"Show NAV Data and Financial Metrics for {scheme_name}"):
-                    st.dataframe(nav_df[['date', 'nav']])
+                    st.dataframe(nav_df[['date', 'nav']], width=1400)
 
 
                     # Function to determine performance indicator
