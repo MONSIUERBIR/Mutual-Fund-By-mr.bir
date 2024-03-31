@@ -307,7 +307,7 @@ with tabs[1]:
                 )
 
                 # Set custom colors if needed
-                colors = ['52DDED', 'EDA752', '6EED52', 'ED7052', '5281ED']  # Example colors
+                colors = ['blue', 'orange', 'green', 'red', 'purple']  # Example colors
                 for i, trace in enumerate(fig.data):
                     trace.line.color = colors[i % len(colors)]
 
@@ -534,3 +534,4 @@ with tabs[2]:
 with tabs[3]:
     st.title("Mutual Fund Guide")
     st.write("MF Guide Content Goes Here")
+
