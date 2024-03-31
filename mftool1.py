@@ -116,7 +116,7 @@ scheme_options = {name: code for name, code in zip(scheme_names, scheme_codes)}
 
 # Home tab content
 with tabs[0]:
-    st.title("Welcome to the Mutual Fund Analysis Dashboard")
+    st.title("Welcome to the Mutual Fund Analyser Dashboard")
 
     # Home page content
     st.header("Features")
