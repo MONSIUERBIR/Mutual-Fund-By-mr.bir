@@ -73,7 +73,7 @@ def calculate_financial_metrics(returns_df, benchmark_returns_df):
 
     metrics = {
         'Average Return (%)': average_return * 100,
-        'Benchmark Return (%)': benchmark_return * 100,
+        'Benchmark Return 1yr (%)': benchmark_return * 100,
         'Average Risk': average_risk,
         'Downside Risk': downside_risk,
         'Sharpe Ratio': sharpe_ratio,
