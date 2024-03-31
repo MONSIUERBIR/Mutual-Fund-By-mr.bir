@@ -250,7 +250,7 @@ with tabs[1]:
         selected_scheme_names = st.multiselect(
             'Select Mutual Fund Schemes',
             options=scheme_names,  # Display scheme names in the multiselect
-            default=[scheme_names[4610]] if scheme_names else []  # Default selection
+            default=[scheme_names[4610,4376]] if scheme_names else []  # Default selection
         )
 
         # Fetch the selected scheme codes based on the selected names and ensure they are strings
@@ -307,7 +307,17 @@ with tabs[1]:
                 )
 
                 # Set custom colors if needed
-                colors = ['blue', 'orange', 'green', 'red', 'purple']  # Example colors
+                colors = [    '#1f77b4',  # muted blue
+                                '#ff7f0e',  # safety orange
+                                '#2ca02c',  # cooked asparagus green
+                                '#d62728',  # brick red
+                                '#9467bd',  # muted purple
+                                '#8c564b',  # chestnut brown
+                                '#e377c2',  # raspberry yogurt pink
+                                '#7f7f7f',  # middle gray
+                                '#bcbd22',  # curry yellow-green
+                                '#17becf'   # blue-teal
+                         ]  # Example colors
                 for i, trace in enumerate(fig.data):
                     trace.line.color = colors[i % len(colors)]
 
