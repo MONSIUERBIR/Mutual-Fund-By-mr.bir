@@ -548,5 +548,54 @@ with tabs[2]:
 # MF Guide tab content
 with tabs[3]:
     st.title("Mutual Fund Guide")
-    st.write("MF Guide Content Goes Here")
+
+    st.header("What is a Mutual Fund?")
+    st.write("""
+    A mutual fund is a type of financial vehicle made up of a pool of money collected from many investors to invest in securities like stocks, bonds, money market instruments, and other assets. Mutual funds are operated by professional money managers, who allocate the fund's assets and attempt to produce capital gains or income for the fund's investors. A mutual fund's portfolio is structured and maintained to match the investment objectives stated in its prospectus.
+    """)
+
+    st.header("Benefits of Investing in Mutual Funds")
+    st.write("""
+    - **Diversification**: Mutual funds typically invest in a range of companies and industries. This helps to lower your risk if one company fails.
+    - **Professional Management**: Fund managers and analysts wake up each morning with one goal: to research, analyze, and study current and potential holdings for your fund.
+    - **Affordability**: Most mutual funds set a relatively low dollar amount for initial investment and subsequent purchases.
+    - **Liquidity**: Mutual fund investors can easily redeem their shares at any time, for the current net asset value (NAV) plus any redemption fees.
+    """)
+
+    st.header("Types of Mutual Funds")
+    st.write("""
+    - **Equity Funds**: These funds invest in stocks and offer the potential for high growth. They are ideal for long-term investors with a high-risk appetite.
+    - **Debt Funds**: These funds invest in bonds and securities and are best suited for income generation and those seeking stability.
+    - **Hybrid Funds**: These funds invest in a mix of asset classes. Depending on the predominant asset class, they are either equity-oriented or debt-oriented.
+    - **Index Funds**: These funds aim to track the performance of a specific index such as the S&P 500 or Dow Jones.
+    - **Balanced Funds**: These funds combine the growth potential of equity with the stability of income through a balanced portfolio.
+    - **Money Market Funds**: These funds invest in short-term debt securities and are considered safe and suitable for short-term investments.
+    - **Sector Funds**: These funds specialize in a particular sector of the market, such as technology, healthcare, or finance.
+    - **Tax-Saving Funds (ELSS)**: These funds offer tax benefits under specific sections of the tax laws and usually come with a lock-in period.
+    """)
+
+    st.header("Things to Consider Before Investing")
+    st.write("""
+    - **Investment Goals**: Determine what you want to achieve through your investments—capital appreciation, income, or both.
+    - **Risk Tolerance**: Assess how much risk you are willing to take. Higher returns usually come with higher risk.
+    - **Investment Horizon**: Consider how long you can stay invested. Some funds are better for short-term investments, while others are suitable for the long-term.
+    - **Fund Performance**: While past performance isn't an indicator of future performance, it can give you an idea about how the fund has done in different market conditions.
+    - **Expense Ratio**: This is the annual fee that all funds charge their shareholders. It represents a percentage of your investment in the fund.
+    - **Exit Load**: Some funds may charge a fee for exiting the fund before a certain period.
+    """)
+
+    st.header("How to Get Started?")
+    st.write("""
+    - **Assess Your Financial Situation**: Before investing, make sure you have adequate emergency savings, insurance, and manage any high-interest debt.
+    - **Decide on an Investment Approach**: You can choose to invest a lump sum or through a Systematic Investment Plan (SIP), which allows you to invest regularly.
+    - **Choose Your Funds**: Select funds that match your risk tolerance and investment goals.
+    - **Open an Account**: You can invest in mutual funds directly through the fund’s website, through a financial advisor, or through an online broker.
+    - **Monitor Your Investments**: Check on your investments periodically to ensure they are performing as expected and make adjustments as needed.
+    """)
+
+    st.header("Conclusion")
+    st.write("""
+    Mutual funds can be a valuable part of your investment strategy. They offer diversification, professional management, and the potential for growth or income. By understanding your investment goals and risk tolerance, you can select funds that are well-suited to your financial plan.
+    """)
+
 
