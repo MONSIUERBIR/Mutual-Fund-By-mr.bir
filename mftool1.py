@@ -307,7 +307,7 @@ with tabs[1]:
                 )
 
                 # Set custom colors if needed
-                colors = ['blue', 'orange', 'green', 'red', 'purple']  # Example colors
+                colors = ['52DDED', 'EDA752', '6EED52', 'ED7052', '5281ED']  # Example colors
                 for i, trace in enumerate(fig.data):
                     trace.line.color = colors[i % len(colors)]
 
