@@ -28,11 +28,12 @@ def fetch_nav_data_and_name(scheme_code, start_date='2015-01-01'):
         return pd.DataFrame(), scheme_name
 
 
-# Function to fetch benchmark data from Yahoo Finance
-def fetch_benchmark_data(ticker, start_date='2015-01-01'):
-    benchmark_data = yf.download(ticker, start=start_date)
+def fetch_benchmark_data(ticker, start_date, end_date=datetime.now().strftime('%Y-%m-%d')):
+    benchmark_data = yf.download(ticker, start=start_date, end=end_date)
     benchmark_data.reset_index(inplace=True)
+    benchmark_data['Date'] = pd.to_datetime(benchmark_data['Date'])
     return benchmark_data
+
 
 
 # Modified function to calculate annualized returns for mutual fund and benchmark
@@ -114,9 +115,12 @@ scheme_names = scheme_codes_df['Scheme_Name'].tolist()  # Placeholder for 'Schem
 # Map scheme names to codes for display in the selectbox
 scheme_options = {name: code for name, code in zip(scheme_names, scheme_codes)}
 
+
+
+
 # Home tab content
 with tabs[0]:
-    st.title("Welcome to the Mutual Fund Analyser Dashboard")
+    st.title("Welcome to the Mutual Fund Analyzer Dashboard")
 
     # Home page content
     st.header("Features")
@@ -163,21 +167,27 @@ with tabs[1]:
         # Display the selected scheme code
         st.write('You selected scheme code:', selected_scheme_code)
         fund_code = selected_scheme_code
-        benchmark_ticker = st.text_input("Benchmark Ticker (Yahoo Finance)", "SPY")
+        benchmark_ticker = st.text_input("Benchmark Ticker (Yahoo Finance)", "^CNXINFRA")
         st.write('Get Benchmark Ticker names from Yahoo Finance.')
 
         if fund_code:
             nav_df, scheme_name = fetch_nav_data_and_name(fund_code)
-            benchmark_df = fetch_benchmark_data(benchmark_ticker)
+            if not nav_df.empty:
+                # Get the oldest and latest NAV date
+                oldest_nav_date = nav_df['date'].min().strftime('%Y-%m-%d')
+                latest_nav_date = nav_df['date'].max().strftime('%Y-%m-%d')
+                # Use these dates as the start and end date for fetching benchmark data
+                benchmark_df = fetch_benchmark_data(benchmark_ticker, oldest_nav_date, latest_nav_date)
 
             if not nav_df.empty and not benchmark_df.empty:
-                st.write(f"Analysis for {scheme_name} against {benchmark_ticker} benchmark")
+                st.subheader(f"Analysis for {scheme_name} against {benchmark_ticker} benchmark")
 
                 # Calculation
                 annualized_returns_df = calculate_annualized_returns(nav_df, 'nav')
                 benchmark_annualized_returns_df = calculate_annualized_returns(benchmark_df, 'Adj Close')
                 financial_metrics_df = calculate_financial_metrics(annualized_returns_df,
                                                                    benchmark_annualized_returns_df)
+
 
                 # Expander for detailed data and financial metrics
                 with st.expander(f"Show NAV Data and Financial Metrics for {scheme_name}"):
@@ -211,14 +221,27 @@ with tabs[1]:
                         performance = performance_indicator(value)
                         col.metric(label=metric, value=formatted_value, delta=performance)
 
-                # Plot NAV vs Benchmark
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=nav_df['date'], y=nav_df['nav'], mode='lines', name=f'{scheme_name} NAV'))
-                fig.add_trace(go.Scatter(x=benchmark_df['Date'], y=benchmark_df['Adj Close'], mode='lines',
-                                         name=f'{benchmark_ticker} Benchmark'))
-                fig.update_layout(width=1300,  # Set the width of the plot
-                            title='NAV vs. Benchmark Performance', xaxis_title='Date', yaxis_title='Value')
-                st.plotly_chart(fig)
+                # Calculate cumulative returns for mutual fund NAV
+                nav_df['Cumulative Returns'] = (1 + nav_df['nav'].pct_change()).cumprod() - 1
+
+                # Ensure benchmark_df covers the same dates as nav_df
+                if not benchmark_df.empty:
+                    benchmark_df = benchmark_df.set_index('Date').reindex(nav_df['date']).interpolate(
+                        method='time').reset_index()
+
+                # Calculate cumulative returns for both NAV and benchmark
+                nav_df['Cumulative Returns'] = (1 + nav_df['nav'].pct_change()).cumprod() - 1
+                benchmark_df['Cumulative Returns'] = (1 + benchmark_df['Adj Close'].pct_change()).cumprod() - 1
+
+                # Prepare the final DataFrame for plotting
+                plot_df = pd.DataFrame({
+                    'Date': nav_df['date'],
+                    f'{scheme_name} Cumulative Returns': nav_df['Cumulative Returns'],
+                    f'{benchmark_ticker} Cumulative Returns': benchmark_df['Cumulative Returns']
+                }).set_index('Date')
+
+                # Using Streamlit to plot the line chart
+                st.line_chart(plot_df,color=["#52DDED", "#ED7052"])
 
     with analysis_tabs[1]:  # Comparison Mode
         st.subheader("Comparison Mode")
@@ -236,60 +259,61 @@ with tabs[1]:
         # Show selected scheme codes for confirmation
         st.write('You selected scheme codes:', ', '.join(selected_scheme_codes))
 
-        benchmark_ticker_comparison = st.text_input("Benchmark Ticker for Comparison (Yahoo Finance)", "SPY")
+        benchmark_ticker_comparison = st.text_input("Benchmark Ticker for Comparison (Yahoo Finance)", "^CNXINFRA")
         st.write('Get Benchmark Ticker names from Yahoo Finance.')
 
         if selected_scheme_codes and benchmark_ticker_comparison:
-            benchmark_df_comparison = fetch_benchmark_data(benchmark_ticker_comparison)
-            fig = go.Figure()
+            # Assume the first selected scheme for benchmark comparison
+            if selected_scheme_codes:  # Check if any scheme is selected
+                first_scheme_code = selected_scheme_codes[0]
+                first_nav_df, first_scheme_name = fetch_nav_data_and_name(first_scheme_code)
+                if not first_nav_df.empty:
+                    # Get the oldest and latest NAV date for the first selected scheme
+                    oldest_nav_date = first_nav_df['date'].min().strftime('%Y-%m-%d')
+                    latest_nav_date = first_nav_df['date'].max().strftime('%Y-%m-%d')
 
-            # Iterate over each selected scheme code
-            for fund_code in selected_scheme_codes:
-                nav_df, scheme_name = fetch_nav_data_and_name(fund_code)
+                    # Fetch benchmark data for the same date range
+                    benchmark_df_comparison = fetch_benchmark_data(benchmark_ticker_comparison, oldest_nav_date,
+                                                                   latest_nav_date)
 
-                if not nav_df.empty:
-                    st.markdown(f"#### {scheme_name}:")
+                    # Calculate cumulative returns for benchmark
+                    benchmark_df_comparison['Cumulative Returns'] = (1 + benchmark_df_comparison[
+                        'Adj Close'].pct_change()).cumprod() - 1
 
-                    # Perform calculations
-                    annualized_returns_df = calculate_annualized_returns(nav_df, 'nav')
-                    financial_metrics_df = calculate_financial_metrics(annualized_returns_df,
-                                                                       benchmark_annualized_returns_df)
+                fig = go.Figure()
 
-                    # Expander for detailed NAV data and financial metrics
-                    with st.expander(f"Metrics for {scheme_name}"):
-                        # Display performance indicators here as needed
+                # Plot each selected mutual fund scheme
+                for scheme_code in selected_scheme_codes:
+                    nav_df, scheme_name = fetch_nav_data_and_name(scheme_code)
+                    if not nav_df.empty:
+                        # Calculate cumulative returns for the mutual fund NAV
+                        nav_df['Cumulative Returns'] = (1 + nav_df['nav'].pct_change()).cumprod() - 1
+                        fig.add_trace(go.Scatter(x=nav_df['date'], y=nav_df['Cumulative Returns'], mode='lines',
+                                                 name=scheme_name))
 
-                        # Example for annualized returns
-                        # Display annualized returns with performance indicators
-                        st.write("Annualized Returns:")
-                        cols_returns = st.columns(len(annualized_returns_df.columns))
-                        for col, metric in zip(cols_returns, annualized_returns_df.columns):
-                            metric_value = annualized_returns_df[metric].values[0]
-                            performance = performance_indicator(metric_value)
-                            col.metric(label=metric, value=f"{metric_value:.2f}%", delta=performance)
+                # Plot the benchmark comparison
+                if not benchmark_df_comparison.empty:
+                    fig.add_trace(
+                        go.Scatter(x=benchmark_df_comparison['Date'], y=benchmark_df_comparison['Cumulative Returns'],
+                                   mode='lines', name='Benchmark'))
 
-                        # Display financial metrics with performance indicators
-                        st.write("Financial Metrics:")
-                        cols_metrics = st.columns(len(financial_metrics_df.columns))
-                        for col, metric in zip(cols_metrics, financial_metrics_df.columns):
-                            value = financial_metrics_df[metric].values[0]
-                            formatted_value = f"{value:.2f}" if isinstance(value, float) else value
-                            performance = performance_indicator(value)
-                            col.metric(label=metric, value=formatted_value, delta=performance)
+                # Update plot layout
+                fig.update_layout(
+                    width=1300,
+                    title='Cumulative Returns: Mutual Funds vs. Benchmark',
+                    xaxis_title='Date',
+                    yaxis_title='Cumulative Returns',
+                    legend_title='Series'
+                )
 
-                    # Add series to the plot for each selected fund
-                    fig.add_trace(go.Scatter(x=nav_df['date'], y=nav_df['nav'], mode='lines', name=scheme_name))
+                # Set custom colors if needed
+                colors = ['blue', 'orange', 'green', 'red', 'purple']  # Example colors
+                for i, trace in enumerate(fig.data):
+                    trace.line.color = colors[i % len(colors)]
 
-            # Add benchmark series to the plot
-            if not benchmark_df_comparison.empty:
-                fig.add_trace(
-                    go.Scatter(x=benchmark_df_comparison['Date'], y=benchmark_df_comparison['Adj Close'], mode='lines',
-                               name=f'{benchmark_ticker_comparison} Benchmark'))
-
-            # Update plot layout
-            fig.update_layout(width=1300, title='NAV vs. Benchmark Performance Comparison', xaxis_title='Date', yaxis_title='Value',
-                              legend_title="Schemes")
-            st.plotly_chart(fig)
+                st.plotly_chart(fig)
+            else:
+                st.error("Please select at least one mutual fund scheme for comparison.")
 
     # Calculator Pages
     with analysis_tabs[2]:
@@ -510,3 +534,4 @@ with tabs[2]:
 with tabs[3]:
     st.title("Mutual Fund Guide")
     st.write("MF Guide Content Goes Here")
+
