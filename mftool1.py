@@ -325,7 +325,7 @@ with tabs[1]:
 
         st.markdown('##')
         # checkbox for adjusting inflation
-        checkbox = st.checkbox('Adjust SIP for Inflation ? (Assumed annual inflation rate is 6%)', False)
+        checkbox = st.checkbox('Adjust SIP for Inflation ? (Annual inflation rate is 6.7%(Avg of 10 year bond yield))', False)
 
         # if inflation checkbox if off
         if checkbox == False:
@@ -355,7 +355,8 @@ with tabs[1]:
         elif checkbox == True:
 
             try:
-                monthly_rate = (rate_of_return - 6) / 12 / 100
+                rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)
+                monthly_rate = (rate_of_return - rarate_of_inflation) / 12 / 100
                 months = duration * 12
 
                 invested_value = sip_amount * months
@@ -399,10 +400,9 @@ with tabs[1]:
         cagr_inwords = babel.numbers.format_currency(cagr, 'INR', locale='en_IN')
 
         st.markdown('##')
-        lumpsum_checkbox = st.checkbox('Adjust Investment for Inflation ? (Assumed annual inflation rate is 6%)', False)
+        lumpsum_checkbox = st.checkbox('Adjust Investment for Inflation ? (Assumed annual inflation rate is 6.7%)', False)
 
         if lumpsum_checkbox == False:
-
             lumpsum_gain = round(float(cagr) - float(lumpsum_amount), 2)
             lumpsum_gain_inwords = babel.numbers.format_currency(lumpsum_gain, 'INR', locale='en_IN')
 
@@ -417,7 +417,8 @@ with tabs[1]:
             st.plotly_chart(fig)
 
         elif lumpsum_checkbox == True:
-            cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - 6) / 100), lumpsum_duration))
+            rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)    
+            cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - rate_of_inflation) / 100), lumpsum_duration))
             cagr_after_inflation_inwords = babel.numbers.format_currency(cagr_after_inflation, 'INR', locale='en_IN')
 
             lumpsum_gain_after_inflation = round(float(cagr_after_inflation) - float(lumpsum_amount), 2)
