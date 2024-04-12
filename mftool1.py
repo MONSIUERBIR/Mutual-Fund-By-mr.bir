@@ -353,9 +353,9 @@ with tabs[1]:
             st.plotly_chart(fig)
 
         elif checkbox == True:
+            rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)
 
             try:
-                rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)
                 monthly_rate = (rate_of_return - rarate_of_inflation) / 12 / 100
                 months = duration * 12
 
