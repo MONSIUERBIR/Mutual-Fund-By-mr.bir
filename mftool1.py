@@ -353,10 +353,8 @@ with tabs[1]:
             st.plotly_chart(fig)
 
         elif checkbox == True:
-            rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)
-
             try:
-                monthly_rate = (rate_of_return - rarate_of_inflation) / 12 / 100
+                monthly_rate = (rate_of_return - 6.7) / 12 / 100
                 months = duration * 12
 
                 invested_value = sip_amount * months
@@ -417,8 +415,7 @@ with tabs[1]:
             st.plotly_chart(fig)
 
         elif lumpsum_checkbox == True:
-            rate_of_inflation = st.slider('Expected Avg Rate of Inflation (Use Avg of 10 Year Bond Yield)(in %)', 1, 30, 6.7)    
-            cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - rate_of_inflation) / 100), lumpsum_duration))
+            cagr_after_inflation = lumpsum_amount * (pow((1 + (lumpsum_rate_of_return - 6.7) / 100), lumpsum_duration))
             cagr_after_inflation_inwords = babel.numbers.format_currency(cagr_after_inflation, 'INR', locale='en_IN')
 
             lumpsum_gain_after_inflation = round(float(cagr_after_inflation) - float(lumpsum_amount), 2)
