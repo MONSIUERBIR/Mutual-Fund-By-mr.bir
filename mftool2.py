@@ -313,13 +313,28 @@ with tabs[1]:
 
                 st.plotly_chart(fig)
                 # Expander for comparing returns among selected mutual funds
-                with st.expander("Compare Returns Among Selected Mutual Funds"):
-                    cols = st.columns(len(selected_scheme_codes))
-                    for col, scheme_code in zip(cols, selected_scheme_codes):
+                with st.expander("Show Detailed Returns Comparison"):
+                    # DataFrame to store the returns data for comparison
+                    returns_comparison_df = pd.DataFrame()
+            
+                    # Iterate over each selected scheme to fetch and calculate annualized returns
+                    for scheme_code in selected_scheme_codes:
                         nav_df, scheme_name = fetch_nav_data_and_name(scheme_code)
                         if not nav_df.empty:
-                            latest_return = nav_df['Cumulative Returns'].iloc[-1]  # Get the latest cumulative return
-                            col.metric(label=f"{scheme_name}", value=f"{latest_return:.2%}")
+                            annualized_returns_df = calculate_annualized_returns(nav_df, 'nav')
+                            returns_comparison_df[scheme_name] = annualized_returns_df.iloc[:, 0]  # Assuming returns are in the first column
+            
+                    # Display the returns comparison DataFrame
+                    st.dataframe(returns_comparison_df)
+            
+                    # Display performance indicators for each scheme based on annualized returns
+                    st.write("Performance Indicators:")
+                    cols = st.columns(len(returns_comparison_df.columns))
+                    for col, (scheme_name, series) in zip(cols, returns_comparison_df.iteritems()):
+                        metric_value = series.values[0]
+                        performance = performance_indicator(metric_value)
+                        col.metric(label=f"{scheme_name} Returns", value=f"{metric_value:.2f}%", delta=performance)
+
             else:
                 st.error("Please select at least one mutual fund scheme for comparison.")
 
