@@ -38,5 +38,5 @@ Upon running the application, you will be presented with a dashboard interface. 
 - **Benchmark Data**: Retrieved from Yahoo Finance.
 
 ## Screenshots
-(https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191433.png)
+(screenshot)
 
