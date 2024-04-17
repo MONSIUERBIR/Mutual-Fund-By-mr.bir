@@ -39,4 +39,10 @@ Upon running the application, you will be presented with a dashboard interface. 
 
 ## Screenshots
 ![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191433.png)
-
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191527.png)
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191557.png)
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191628.png)
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191637.png)
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191653.png)
+![](https://github.com/MONSIUERBIR/Mutual-Fund-By-mr.bir/blob/main/screenshots/Screenshot%202024-03-31%20191715.png)
+![](screenshots/Screenshot 2024-03-31 191715.png)
