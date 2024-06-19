@@ -167,7 +167,7 @@ with tabs[1]:
         # Display the selected scheme code
         st.write('You selected scheme code:', selected_scheme_code)
         fund_code = selected_scheme_code
-        benchmark_ticker = st.text_input("Benchmark Ticker (Yahoo Finance)(Benchmark List Comming soon)", "^CNXINFRA")
+        benchmark_ticker = st.text_input("Benchmark Ticker (Yahoo Finance)(Benchmark List Coming soon)", "^CNXINFRA")
         st.write('Get Benchmark Ticker names from Yahoo Finance.')
 
         if fund_code:
