@@ -157,7 +157,7 @@ with tabs[1]:
             'Select Mutual Fund Scheme',
             options=scheme_names, # Display scheme names in the selectbox
             placeholder="Select Scheme...",
-            index=4610,
+            index=4608,
 
         )
 
@@ -250,7 +250,7 @@ with tabs[1]:
         selected_scheme_names = st.multiselect(
             'Select Mutual Fund Schemes',
             options=scheme_names,  # Display scheme names in the multiselect
-            default=[scheme_names[4610]] if scheme_names else []  # Default selection
+            default=[scheme_names[4608]] if scheme_names else []  # Default selection
         )
 
         # Fetch the selected scheme codes based on the selected names and ensure they are strings
